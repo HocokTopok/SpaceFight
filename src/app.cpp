@@ -680,10 +680,14 @@ private :
             for (int t = 0; t < 4; ++t)
             {
                 auto spec = shipSpecs()[t];
+                Ships one{};
+                one[t] = 1;
+                const auto & technology = p.owner >= 0 ? view.players[p.owner].tech : empire.tech;
+                auto stats = makeFleet(one, technology)->stats();
                 auto cost = price(spec.cost, empire);
                 float y = 392 + t * 66;
                 text(spec.name + "  x" + (seen ? std::to_string(p.ships[t]) : "?"), 1103, y, 17);
-                text("ATK " + std::to_string(spec.attack) + " / HP " + std::to_string(spec.armor), 1103,
+                text("ATK " + std::to_string(stats.attack) + " / HP " + std::to_string(stats.armor), 1103,
                      y + 24, 12, muted);
                 auto copy = view;
                 bool valid = applyOrder(copy, m_player, {OrderKind::Produce, id, 0, t}).empty();

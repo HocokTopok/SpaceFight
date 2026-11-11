@@ -1,0 +1,27 @@
+name: build-and-test
+on: [push, pull_request]
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-24.04, macos-15]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Linux dependencies
+        if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y libx11-dev libxrandr-dev libxcursor-dev libxi-dev libudev-dev libfreetype-dev libgl1-mesa-dev xvfb
+      - run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+      - run: cmake --build build -j 4
+      - run: ctest --test-dir build --output-on-failure
+      - name: Linux UI regression
+        if: runner.os == 'Linux'
+        run: |
+          mkdir -p build/screenshots
+          xvfb-run -a ./build/GalacticDominion --ui-test build/screenshots
+      - name: Headless sanitizers
+        run: |
+          cmake -S . -B build-sanitize -DGD_BUILD_APP=OFF -DGD_SANITIZE=ON -DCMAKE_BUILD_TYPE=Debug
+          cmake --build build-sanitize -j 4
+          ctest --test-dir build-sanitize --output-on-failure

@@ -43,11 +43,19 @@ if(GD_BUILD_APP)
 endif()
 if(GD_BUILD_APP)
   add_executable(GalacticDominion src/app.cpp)
+  if(APPLE)
+    set_target_properties(GalacticDominion PROPERTIES
+      MACOSX_BUNDLE TRUE
+      MACOSX_BUNDLE_GUI_IDENTIFIER org.galacticdominion.game
+      MACOSX_BUNDLE_BUNDLE_NAME "Galactic Dominion"
+      MACOSX_BUNDLE_BUNDLE_VERSION "1.0.0"
+      MACOSX_BUNDLE_SHORT_VERSION_STRING "1.0.0")
+  endif()
   target_link_libraries(GalacticDominion PRIVATE gd_network SFML::Graphics)
   target_compile_definitions(GalacticDominion PRIVATE GD_ASSET_DIR="${CMAKE_CURRENT_SOURCE_DIR}/assets")
   target_compile_options(GalacticDominion PRIVATE -Wall -Wextra -Wpedantic)
   add_custom_command(TARGET GalacticDominion POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/assets $<TARGET_FILE_DIR:GalacticDominion>/assets)
-  install(TARGETS GalacticDominion RUNTIME DESTINATION bin)
+  install(TARGETS GalacticDominion BUNDLE DESTINATION . RUNTIME DESTINATION bin)
   install(DIRECTORY assets/ DESTINATION bin/assets)
 endif()

@@ -12,25 +12,78 @@ struct Resources
 {
     int metal = 0, energy = 0, science = 0;
     bool covers(Resources cost) const;
-    Resources & operator+=(Resources rhs);
-    Resources & operator-=(Resources rhs);
+    Resources &operator+=(Resources rhs);
+    Resources &operator-=(Resources rhs);
     bool operator==(const Resources &) const = default;
 };
-enum class PlanetType { Terran, Desert, Ice, Volcanic, Gas };
-enum class Building { Mine, PowerPlant, Laboratory, Shipyard, DefenseStation, Radar };
-enum class ShipType { Fighter, Frigate, Cruiser, Bomber };
-enum class Tech { Extraction, Automation, Efficiency, Weapons, Armor, HeavyShips, Engines, Sensors, Warp };
+enum class PlanetType
+{
+    Terran,
+    Desert,
+    Ice,
+    Volcanic,
+    Gas
+};
+enum class Building
+{
+    Mine,
+    PowerPlant,
+    Laboratory,
+    Shipyard,
+    DefenseStation,
+    Radar
+};
+enum class ShipType
+{
+    Fighter,
+    Frigate,
+    Cruiser,
+    Bomber
+};
+enum class Tech
+{
+    Extraction,
+    Automation,
+    Efficiency,
+    Weapons,
+    Armor,
+    HeavyShips,
+    Engines,
+    Sensors,
+    Warp
+};
 using Ships = std::array<int, 4>;
 using Technologies = std::array<bool, 9>;
-struct ShipSpec { std::string name; int attack, armor, speed; Resources cost; int turns; };
-struct BuildingSpec { std::string name; Resources cost; int turns; Resources production; int upkeep; };
-struct TechSpec { std::string name, description; int cost, prerequisite; };
-const std::array<ShipSpec, 4> & shipSpecs();
-const std::array<BuildingSpec, 6> & buildingSpecs();
-const std::array<TechSpec, 9> & techSpecs();
+struct ShipSpec
+{
+    std::string name;
+    int attack, armor, speed;
+    Resources cost;
+    int turns;
+};
+struct BuildingSpec
+{
+    std::string name;
+    Resources cost;
+    int turns;
+    Resources production;
+    int upkeep;
+};
+struct TechSpec
+{
+    std::string name, description;
+    int cost, prerequisite;
+};
+const std::array<ShipSpec, 4> &shipSpecs();
+const std::array<BuildingSpec, 6> &buildingSpecs();
+const std::array<TechSpec, 9> &techSpecs();
 std::string planetTypeName(PlanetType type);
-int shipCount(const Ships & ships);
-struct Job { bool ship = false; int type = 0, remaining = 0; };
+int shipCount(const Ships &ships);
+struct Job
+{
+    bool ship = false;
+    int type = 0, remaining = 0;
+};
 struct Planet
 {
     int id = 0;
@@ -58,7 +111,7 @@ struct Transit
 struct World
 {
     std::uint32_t seed = 42;
-    int turn = 1, winner = -1;
+    int turn = 1, winner = -1, aiStyle = 0;
     std::array<Player, 2> players;
     std::vector<Planet> planets;
     std::vector<std::array<int, 2>> lanes;
@@ -73,23 +126,25 @@ class PlanetBuilder
 public :
     virtual ~PlanetBuilder() = default;
     Planet make(int id, std::string name, PlanetType type, float x, float y);
+
 private :
-    virtual void set_economy(Planet & planet) const = 0;
-    virtual void set_colony(Planet & planet) const = 0;
+    virtual void set_economy(Planet &planet) const = 0;
+    virtual void set_colony(Planet &planet) const = 0;
 };
 class FrontierBuilder : public PlanetBuilder
 {
 private :
-    void set_economy(Planet & planet) const override;
-    void set_colony(Planet & planet) const override;
+    void set_economy(Planet &planet) const override;
+    void set_colony(Planet &planet) const override;
 };
 class CapitalBuilder : public PlanetBuilder
 {
 public :
     explicit CapitalBuilder(int owner) : m_owner(owner) {}
+
 private :
-    void set_economy(Planet & planet) const override;
-    void set_colony(Planet & planet) const override;
+    void set_economy(Planet &planet) const override;
+    void set_colony(Planet &planet) const override;
     int m_owner;
 };
 ///////////////////////////////////////////////////////////////////////////////
@@ -111,6 +166,7 @@ class Ship : public FleetComponent
 public :
     explicit Ship(ShipType type) : m_type(type) {}
     FleetStats stats() const override;
+
 private :
     ShipType m_type;
 };
@@ -119,6 +175,7 @@ class FleetGroup : public FleetComponent
 public :
     void add(std::unique_ptr<FleetComponent> component);
     FleetStats stats() const override;
+
 private :
     std::vector<std::unique_ptr<FleetComponent>> m_components;
 };
@@ -131,7 +188,7 @@ public :
     virtual ~ShipFactory() = default;
     virtual std::unique_ptr<FleetComponent> make_ship() const = 0;
 };
-template < ShipType Type > class TypedShipFactory : public ShipFactory
+template <ShipType Type> class TypedShipFactory : public ShipFactory
 {
 public :
     std::unique_ptr<FleetComponent> make_ship() const override
@@ -146,18 +203,21 @@ class ShipUpgrade : public FleetComponent
 {
 public :
     ShipUpgrade(std::unique_ptr<FleetComponent> component, Tech tech)
-        : m_component(std::move(component)), m_tech(tech) {}
+        : m_component(std::move(component)), m_tech(tech)
+    {
+    }
     FleetStats stats() const override;
+
 private :
     std::unique_ptr<FleetComponent> m_component;
     Tech m_tech;
 };
 ///////////////////////////////////////////////////////////////////////////////
-std::unique_ptr<FleetComponent> makeFleet(const Ships & ships, const Technologies & tech);
+std::unique_ptr<FleetComponent> makeFleet(const Ships &ships, const Technologies &tech);
 World makeWorld(std::uint32_t seed = 42);
-bool linked(const World & world, int from, int to);
-Resources income(const Planet & planet, const Player & player);
-Resources price(Resources base, const Player & player);
-bool visible(const World & world, int player, int planet);
-int travelTime(const World & world, int player, int from, int to, const Ships & ships);
-}
+bool linked(const World &world, int from, int to);
+Resources income(const Planet &planet, const Player &player);
+Resources price(Resources base, const Player &player);
+bool visible(const World &world, int player, int planet);
+int travelTime(const World &world, int player, int from, int to, const Ships &ships);
+} // namespace gd
